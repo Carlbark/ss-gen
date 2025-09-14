@@ -6,32 +6,46 @@ from htmlnode import HTMLNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html(self):
-        print("\nCreating a HTMLNode only containing two value pair props and using the props_to_html method to unpack/print prpos\n")
         node = HTMLNode(props = {"href":"https://www.google.com", "target":"_blank",})
-        print(node.props_to_html())
+        self.assertEqual(node.props_to_html(), ' href="https://www.google.com" target="_blank"')
 
     def test_empty_HTMLNode(self):
-        print("\nCreating and printing an empty HTMLNode\n")
         node = HTMLNode()
-        print(node)
+        # Test that the node was created with default values
+        self.assertIsNone(node.tag)
+        self.assertIsNone(node.value)
+        self.assertIsNone(node.children)
+        self.assertIsNone(node.props) 
 
     def test_nochildren_HTMLNode(self):
-        print("\nCreating and printing a HTMLNode with no children and no props\n")
         node = HTMLNode("h1", "This is a h1 header")
-        print(node)
-
+        # Test that the node has the expected tag and value
+        self.assertEqual(node.tag, "h1")
+        self.assertEqual(node.value, "This is a h1 header")
+        self.assertIsNone(node.children)
+        self.assertIsNone(node.props)
+    
     def test_children_HTMLNode(self):
-        print("\nCreating a HTMLNode with two children nodes and print the parent_node\n")
         node = HTMLNode("h1", "This is a h1 header")
         node2 = HTMLNode("p", "This is a paragraph")
-        parent_node = HTMLNode(children = [node, node2])
-        print(parent_node)
+        parent_node = HTMLNode(children=[node, node2])
+    
+        # Test that the parent has the expected children
+        self.assertEqual(len(parent_node.children), 2)
+        self.assertEqual(parent_node.children[0].tag, "h1")
+        self.assertEqual(parent_node.children[1].tag, "p")
 
-    def test_full_HTMLNOde(self):
-        print("\nCreating a HTMLNode with all attributes set and printing\n")
+    def test_full_HTMLNode(self):
+        # Note: Fixed typo "HTMLNOde" -> "HTMLNode"
         node = HTMLNode("h1", "This is a h1 header")
-        node2 = HTMLNode("a", "This is a link (a) text", node, {"href":"https://www.google.com", "target":"_blank",})
-        print(node2)
+        node2 = HTMLNode("a", "This is a link (a) text", [node], {"href": "https://www.google.com", "target": "_blank"})
+    
+        # Test all the attributes
+        self.assertEqual(node2.tag, "a")
+        self.assertEqual(node2.value, "This is a link (a) text")
+        self.assertEqual(len(node2.children), 1)
+        self.assertEqual(node2.props["href"], "https://www.google.com")
+        self.assertEqual(node2.props["target"], "_blank")
 
 if __name__ == "__main__":
     unittest.main()
