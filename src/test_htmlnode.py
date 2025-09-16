@@ -3,7 +3,6 @@ import unittest
 from htmlnode import HTMLNode 
 
 
-
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html(self):
         node = HTMLNode(props = {"href":"https://www.google.com", "target":"_blank",})
@@ -31,9 +30,9 @@ class TestHTMLNode(unittest.TestCase):
         parent_node = HTMLNode(children=[node, node2])
     
         # Test that the parent has the expected children
-        self.assertEqual(len(parent_node.children), 2)
-        self.assertEqual(parent_node.children[0].tag, "h1")
-        self.assertEqual(parent_node.children[1].tag, "p")
+        self.assertEqual(len(parent_node.children), 2) # type: ignore
+        self.assertEqual(parent_node.children[0].tag, "h1") # type: ignore
+        self.assertEqual(parent_node.children[1].tag, "p") # type: ignore
 
     def test_full_HTMLNode(self):
         # Note: Fixed typo "HTMLNOde" -> "HTMLNode"
@@ -43,9 +42,9 @@ class TestHTMLNode(unittest.TestCase):
         # Test all the attributes
         self.assertEqual(node2.tag, "a")
         self.assertEqual(node2.value, "This is a link (a) text")
-        self.assertEqual(len(node2.children), 1)
-        self.assertEqual(node2.props["href"], "https://www.google.com")
-        self.assertEqual(node2.props["target"], "_blank")
+        self.assertEqual(len(node2.children), 1) # type: ignore
+        self.assertEqual(node2.props["href"], "https://www.google.com") # type: ignore
+        self.assertEqual(node2.props["target"], "_blank") # type: ignore
 
 if __name__ == "__main__":
     unittest.main()
