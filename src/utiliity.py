@@ -1,4 +1,5 @@
 
+import re
 
 from leafnode import LeafNode
 from textnode import TextNode, TextType
@@ -33,3 +34,21 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         else:
             result.append(node)
     return result
+
+def extract_markdown_images(text):
+    alts = re.findall(r"!\[(.*?)\]", text)
+    urls = re.findall(r"\((.*?)\)", text)
+    if len(alts) != len(urls):
+        raise ValueError("Number of alt texts and URLs in markdown image syntax do not match.")
+    matches = list(zip(alts, urls))
+    images = [(alt, url) for alt, url in matches]
+    return images
+
+def extract_markdown_links(text):
+    alts = re.findall(r"\[(.*?)\]", text)
+    urls = re.findall(r"\((.*?)\)", text)
+    if len(alts) != len(urls):
+        raise ValueError("Number of alt texts and URLs in markdown link syntax do not match.")
+    matches = list(zip(alts, urls))
+    links = [(alt, url) for alt, url in matches]
+    return links

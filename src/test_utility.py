@@ -123,3 +123,27 @@ class TestText(unittest.TestCase):
         node = TextNode("This is unsupported", FakeTextType.UNSUPPORTED)  # type: ignore
         with self.assertRaises(ValueError):
             text_node_to_html_node(node)
+            
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)")
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+        
+    def test_extract_markdown_images2(self):
+        matches = extract_markdown_images("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)")
+        self.assertListEqual([("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")], matches)
+        
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links("This is text with a [link](https://www.example.com)")
+        self.assertListEqual([("link", "https://www.example.com")], matches)
+
+    def test_extract_markdown_links2(self):
+        matches = extract_markdown_links("This is text with a [link1](https://www.example1.com) and a [link2](https://www.example2.com)")
+        self.assertListEqual([("link1", "https://www.example1.com"), ("link2", "https://www.example2.com")], matches)  
+
+    def test_extract_malformed_markdown_images(self):
+        with self.assertRaises(ValueError):
+            extract_markdown_images("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png and ![image2](https://i.imgur.com/zjjcJKZ2.png)")
+    
+    def test_extract_malformed_markdown_links(self):
+        with self.assertRaises(ValueError):
+            extract_markdown_links("This is text with a [link](https://www.example.com and a [link2](https://www.example2.com)")
