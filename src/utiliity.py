@@ -52,3 +52,39 @@ def extract_markdown_links(text):
     matches = list(zip(alts, urls))
     links = [(alt, url) for alt, url in matches]
     return links
+
+def split_nodes_image(old_nodes):
+    result = []
+    for node in old_nodes:
+        if node.text_type == TextType.TEXT:
+            images = extract_markdown_images(node.text)
+            if len(images) == 0:
+                result.append(node)
+                continue
+            for alt, url in images:
+                parts = node.text.split(f"![{alt}]({url})", 1)
+                if parts[0]:
+                    result.append(TextNode(parts[0]))
+                result.append(TextNode(alt, TextType.IMAGE, url))
+                node.text = parts[1]
+        else:
+            result.append(node)
+    return result
+
+def split_nodes_link(old_nodes):
+    result = []
+    for node in old_nodes:
+        if node.text_type == TextType.TEXT:
+            links = extract_markdown_links(node.text)
+            if len(links) == 0:
+                result.append(node)
+                continue
+            for alt, url in links:
+                parts = node.text.split(f"[{alt}]({url})", 1)
+                if parts[0]:
+                    result.append(TextNode(parts[0]))
+                result.append(TextNode(alt, TextType.LINK, url))
+                node.text = parts[1]
+        else:
+            result.append(node)
+    return result

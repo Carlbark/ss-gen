@@ -146,4 +146,66 @@ class TestText(unittest.TestCase):
     
     def test_extract_malformed_markdown_links(self):
         with self.assertRaises(ValueError):
-            extract_markdown_links("This is text with a [link](https://www.example.com and a [link2](https://www.example2.com)")
+            extract_markdown_links("This is text with a [link](https://www.example.com and a [link2](https://www.example2.com)")    
+            
+    def test_split_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+            ],
+            new_nodes,
+        )
+    
+    def test_split_no_image(self):
+        node = TextNode(
+            "This is text with no images",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with no images", TextType.TEXT),
+            ],
+            new_nodes,
+        )
+        
+    def test_split_links(self):
+        node = TextNode(
+            "This is text with a [link](https://www.example.com) and another [second link](https://www.example2.com)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://www.example.com"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second link", TextType.LINK, "https://www.example2.com"
+                ),
+            ],
+            new_nodes,
+        )
+        
+    def test_split_no_link(self):
+        node = TextNode(
+            "This is text with no links",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with no links", TextType.TEXT),
+            ],
+            new_nodes,
+        )  
