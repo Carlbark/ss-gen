@@ -1,4 +1,3 @@
-
 import re
 
 from leafnode import LeafNode
@@ -36,20 +35,14 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     return result
 
 def extract_markdown_images(text):
-    alts = re.findall(r"!\[(.*?)\]", text)
-    urls = re.findall(r"\((.*?)\)", text)
-    if len(alts) != len(urls):
-        raise ValueError("Number of alt texts and URLs in markdown image syntax do not match.")
-    matches = list(zip(alts, urls))
-    images = [(alt, url) for alt, url in matches]
+    matches = re.findall(r"!\[(.*?)\]\((.*?)\)", text)
+    images = []
+    for alt, url in matches:
+        images.append((alt, url))
     return images
 
 def extract_markdown_links(text):
-    alts = re.findall(r"\[(.*?)\]", text)
-    urls = re.findall(r"\((.*?)\)", text)
-    if len(alts) != len(urls):
-        raise ValueError("Number of alt texts and URLs in markdown link syntax do not match.")
-    matches = list(zip(alts, urls))
+    matches = re.findall(r"(?<!\!)\[([^\]]+)\]\(([^)]+)\)", text)
     links = [(alt, url) for alt, url in matches]
     return links
 
@@ -57,16 +50,16 @@ def split_nodes_image(old_nodes):
     result = []
     for node in old_nodes:
         if node.text_type == TextType.TEXT:
-            images = extract_markdown_images(node.text)
-            if len(images) == 0:
-                result.append(node)
-                continue
+            text = node.text
+            images = extract_markdown_images(text)
             for alt, url in images:
-                parts = node.text.split(f"![{alt}]({url})", 1)
+                parts = text.split(f"![{alt}]({url})", 1)
                 if parts[0]:
                     result.append(TextNode(parts[0]))
                 result.append(TextNode(alt, TextType.IMAGE, url))
-                node.text = parts[1]
+                text = parts[1] if len(parts) > 1 else ""
+            if text:
+                result.append(TextNode(text))
         else:
             result.append(node)
     return result
@@ -75,16 +68,28 @@ def split_nodes_link(old_nodes):
     result = []
     for node in old_nodes:
         if node.text_type == TextType.TEXT:
-            links = extract_markdown_links(node.text)
+            text = node.text
+            links = extract_markdown_links(text)
             if len(links) == 0:
                 result.append(node)
                 continue
             for alt, url in links:
-                parts = node.text.split(f"[{alt}]({url})", 1)
+                parts = text.split(f"[{alt}]({url})", 1)
                 if parts[0]:
                     result.append(TextNode(parts[0]))
                 result.append(TextNode(alt, TextType.LINK, url))
-                node.text = parts[1]
+                text = parts[1] if len(parts) > 1 else ""
+            if text:
+                result.append(TextNode(text))
         else:
             result.append(node)
     return result
+
+def text_to_textnodes(text):
+    nodes = [TextNode(text)]
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    return nodes

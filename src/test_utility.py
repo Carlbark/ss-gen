@@ -140,17 +140,9 @@ class TestText(unittest.TestCase):
         matches = extract_markdown_links("This is text with a [link1](https://www.example1.com) and a [link2](https://www.example2.com)")
         self.assertListEqual([("link1", "https://www.example1.com"), ("link2", "https://www.example2.com")], matches)  
 
-    def test_extract_malformed_markdown_images(self):
-        with self.assertRaises(ValueError):
-            extract_markdown_images("This is text with an ![image](https://i.imgur.com/zjjcJKZ.png and ![image2](https://i.imgur.com/zjjcJKZ2.png)")
-    
-    def test_extract_malformed_markdown_links(self):
-        with self.assertRaises(ValueError):
-            extract_markdown_links("This is text with a [link](https://www.example.com and a [link2](https://www.example2.com)")    
-            
     def test_split_images(self):
         node = TextNode(
-            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png).",
             TextType.TEXT,
         )
         new_nodes = split_nodes_image([node])
@@ -162,6 +154,7 @@ class TestText(unittest.TestCase):
                 TextNode(
                     "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
                 ),
+                TextNode(".", TextType.TEXT),
             ],
             new_nodes,
         )
@@ -209,3 +202,21 @@ class TestText(unittest.TestCase):
             ],
             new_nodes,
         )  
+        
+    def test_text_to_textnodes(self):
+        text = "This is a **bold** word, an _italic_ word, `inline code`, a [link](https://www.example.com), and an ![image](https://i.imgur.com/zjjcJKZ.png)."
+        nodes = text_to_textnodes(text)
+        expected = [
+            TextNode("This is a ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" word, an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word, ", TextType.TEXT),
+            TextNode("inline code", TextType.CODE),
+            TextNode(", a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://www.example.com"),
+            TextNode(", and an ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertListEqual(expected, nodes)   
