@@ -2,6 +2,32 @@ import re
 
 from leafnode import LeafNode
 from textnode import TextNode, TextType
+from enum import Enum
+
+
+class BlockType(Enum):
+    PARAGRAPH = "p"
+    HEADING = "h"
+    ORDERED_LIST = "ol"
+    UNORDERED_LIST = "ul"
+    CODE = "c"
+    QUOTE = "q"
+
+def block_to_block_type(block):
+    lines = block.split("\n")
+    first_line = lines[0].strip()
+    if first_line.startswith("#"):
+        return BlockType.HEADING
+    elif first_line.startswith(">"):
+        return BlockType.QUOTE
+    elif re.match(r"^\d+\.\s", first_line):
+        return BlockType.ORDERED_LIST
+    elif re.match(r"^[-*+]\s", first_line):
+        return BlockType.UNORDERED_LIST
+    elif first_line.startswith("```") and lines[-1].startswith("```"):
+        return BlockType.CODE
+    else:
+        return BlockType.PARAGRAPH
 
 def text_node_to_html_node(text_node):
         match text_node.text_type:

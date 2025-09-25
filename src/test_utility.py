@@ -240,3 +240,15 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+        
+    def test_block_to_block_type(self):
+        self.assertEqual(block_to_block_type("This is a normal paragraph\nwith two lines"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("# This is a header"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("## This is a level 2 header"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("### This is a level 3 header"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("- This is a list item\n- This is another list item"), BlockType.UNORDERED_LIST)
+        self.assertEqual(block_to_block_type("* This is a list item"), BlockType.UNORDERED_LIST)
+        self.assertEqual(block_to_block_type("1. This is a numbered list item"), BlockType.ORDERED_LIST)
+        self.assertEqual(block_to_block_type("This is a normal paragraph"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("> This is a blockquote"), BlockType.QUOTE)
+        self.assertEqual(block_to_block_type("```\nThis is a code block\n```"), BlockType.CODE)
