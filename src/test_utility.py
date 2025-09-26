@@ -2,8 +2,10 @@ import unittest
 
 from enum import Enum
 from textnode import TextNode, TextType
-from utiliity import *
-
+from utility import *
+from leafnode import LeafNode
+from parentnode import ParentNode
+from htmlnode import HTMLNode
 
 class TestSplit(unittest.TestCase):
     def test_split_no_delimiter(self):
@@ -252,3 +254,115 @@ This is the same paragraph on a new line
         self.assertEqual(block_to_block_type("This is a normal paragraph"), BlockType.PARAGRAPH)
         self.assertEqual(block_to_block_type("> This is a blockquote"), BlockType.QUOTE)
         self.assertEqual(block_to_block_type("```\nThis is a code block\n```"), BlockType.CODE)
+        
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+    This is another paragraph with _italic_ text and `code` here
+
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html() 
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_codeblock(self):
+        md = """
+    ```
+This is text that _should_ remain
+the **same** even with inline stuff
+    ```
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+    def test_unorderded_list(self):
+        md = """
+- This is a list item with **bold** text
+- This is another item with `code`
+- Final item with a [link](https://www.example.com)
+
+    Code in the middle
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>This is a list item with <b>bold</b> text</li><li>This is another item with <code>code</code></li><li>Final item with a <a href=\"https://www.example.com\">link</a></li></ul><p>Code in the middle</p></div>",
+        )  
+        
+    def test_ordered_list(self):
+        md = """
+1. This is a list item with **bold** text
+2. This is another item with `code`
+3. Final item with a [link](https://www.example.com)
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>This is a list item with <b>bold</b> text</li><li>This is another item with <code>code</code></li><li>Final item with a <a href=\"https://www.example.com\">link</a></li></ol></div>",
+        )
+        
+    def test_blockquote(self):
+        md = """
+> This is a blockquote
+> with multiple lines
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a blockquote<br>with multiple lines</blockquote></div>",
+        )
+        
+    def test_heading(self):
+        md = """
+# This is a level 1 heading
+
+## This is a level 2 heading
+
+### This is a level 3 heading
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>This is a level 1 heading</h1><h2>This is a level 2 heading</h2><h3>This is a level 3 heading</h3></div>",
+        )
+        
+    def test_text_mixed(self):
+        md = """
+Some **bold** text, some _italic_ text, and some `inline code`.
+
+```
+def hello_world():
+    print("Hello, world!")
+```
+
+> This is a blockquote with a [link](https://www.example.com) and an ![image](https://i.imgur.com/zjjcJKZ.png)
+
+- List item 1 with **bold** text
+- List item 2 with `code`
+"""
+        self.maxDiff = None
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>Some <b>bold</b> text, some <i>italic</i> text, and some <code>inline code</code>.</p><pre><code>def hello_world():\n    print(\"Hello, world!\")\n</code></pre><blockquote>This is a blockquote with a <a href=\"https://www.example.com\">link</a> and an <img src=\"https://i.imgur.com/zjjcJKZ.png\" alt=\"image\"></img></blockquote><ul><li>List item 1 with <b>bold</b> text</li><li>List item 2 with <code>code</code></li></ul></div>",
+        )
