@@ -366,3 +366,20 @@ def hello_world():
             html,
             "<div><p>Some <b>bold</b> text, some <i>italic</i> text, and some <code>inline code</code>.</p><pre><code>def hello_world():\n    print(\"Hello, world!\")\n</code></pre><blockquote>This is a blockquote with a <a href=\"https://www.example.com\">link</a> and an <img src=\"https://i.imgur.com/zjjcJKZ.png\" alt=\"image\"></img></blockquote><ul><li>List item 1 with <b>bold</b> text</li><li>List item 2 with <code>code</code></li></ul></div>",
         )
+
+    def test_extract_title(self):
+        md = """
+# This is a title
+
+Some content here.
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "This is a title")
+        md2 = """
+Some content here without a title.
+"""
+        self.assertRaises(ValueError, extract_title, md2)
+        md3 = """
+## This is a level 2 heading
+"""
+        self.assertRaises(ValueError, extract_title, md3)
