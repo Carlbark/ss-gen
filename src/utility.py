@@ -1,4 +1,5 @@
 import re
+import os
 
 from leafnode import LeafNode
 from parentnode import ParentNode
@@ -219,13 +220,28 @@ def generate_page(from_path, template_path, dest_path):
     with open(from_path, "r", encoding="utf-8") as f:
         markdown = f.read()
     title = extract_title(markdown)
-    print(f"Extracted title: {title}")
     content_node = markdown_to_html_node(markdown)
     content_html = content_node.to_html()
-    print(f"Generated content HTML: {content_html[:600]}...")
     with open(template_path, "r", encoding="utf-8") as f:
         template = f.read()
     page_html = template.replace("{{ Title }}", title).replace("{{ Content }}", content_html)
-    print(f"Generated full page HTML: {page_html[:600]}...")
     with open(dest_path, "w", encoding="utf-8") as f:
         f.write(page_html)
+        
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for entry in os.listdir(dir_path_content):
+        entry_path = os.path.join(dir_path_content, entry)
+        if os.path.isdir(entry_path):
+            print(f"Entering directory {entry_path}...")
+            sub_dest_dir = os.path.join(dest_dir_path, entry)
+            if not os.path.exists(sub_dest_dir):
+                os.makedirs(sub_dest_dir, exist_ok=True)
+            generate_pages_recursive(entry_path, template_path, sub_dest_dir)
+        elif entry.endswith(".md"):
+            rel_dir = os.path.relpath(dir_path_content, start=dir_path_content)
+            dest_subdir = dest_dir_path if rel_dir == "." else os.path.join(dest_dir_path, rel_dir)
+            dest_filename = os.path.splitext(entry)[0] + ".html"
+            dest_path = os.path.join(dest_subdir, dest_filename)
+            print(f"Processing file {entry_path} to {dest_path}...")
+            generate_page(entry_path, template_path, dest_path)

@@ -7,7 +7,7 @@ def main():
     print("Copying static to public...")
     recursive_copy("static", "public")
     print("Generating HTML pages...")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content/", "template.html", "public/")
 
 
 def recursive_copy(src="static/", dst="public/"):
