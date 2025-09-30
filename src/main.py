@@ -1,13 +1,16 @@
 import os
 import shutil   
+import sys
 from textnode import TextNode, TextType
 from utility import *
 
 def main():
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    print(f"Basepath set to: {basepath}")
     print("Copying static to public...")
     recursive_copy("static", "public")
     print("Generating HTML pages...")
-    generate_pages_recursive("content/", "template.html", "public/")
+    generate_pages_recursive("content/", "template.html", "docs/", basepath)
 
 
 def recursive_copy(src="static/", dst="public/"):

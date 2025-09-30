@@ -215,7 +215,7 @@ def extract_title(markdown):
             return block[2:].strip()
     raise ValueError("No title found in markdown")
     
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using template {template_path}...")
     with open(from_path, "r", encoding="utf-8") as f:
         markdown = f.read()
@@ -225,11 +225,12 @@ def generate_page(from_path, template_path, dest_path):
     with open(template_path, "r", encoding="utf-8") as f:
         template = f.read()
     page_html = template.replace("{{ Title }}", title).replace("{{ Content }}", content_html)
+    page_html = page_html.replace("href=\"/", f"href=\"{basepath}").replace("src=\"/", f"src=\"{basepath}")
     with open(dest_path, "w", encoding="utf-8") as f:
         f.write(page_html)
         
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for entry in os.listdir(dir_path_content):
         entry_path = os.path.join(dir_path_content, entry)
         if os.path.isdir(entry_path):
@@ -237,11 +238,11 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             sub_dest_dir = os.path.join(dest_dir_path, entry)
             if not os.path.exists(sub_dest_dir):
                 os.makedirs(sub_dest_dir, exist_ok=True)
-            generate_pages_recursive(entry_path, template_path, sub_dest_dir)
+            generate_pages_recursive(entry_path, template_path, sub_dest_dir, basepath)
         elif entry.endswith(".md"):
             rel_dir = os.path.relpath(dir_path_content, start=dir_path_content)
             dest_subdir = dest_dir_path if rel_dir == "." else os.path.join(dest_dir_path, rel_dir)
             dest_filename = os.path.splitext(entry)[0] + ".html"
             dest_path = os.path.join(dest_subdir, dest_filename)
             print(f"Processing file {entry_path} to {dest_path}...")
-            generate_page(entry_path, template_path, dest_path)
+            generate_page(entry_path, template_path, dest_path, basepath)
