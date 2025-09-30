@@ -7,8 +7,8 @@ from utility import *
 def main():
     basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
     print(f"Basepath set to: {basepath}")
-    print("Copying static to public...")
-    recursive_copy("static", "public")
+    print("Copying static to docs...")
+    recursive_copy("static", "docs")
     print("Generating HTML pages...")
     generate_pages_recursive("content/", "template.html", "docs/", basepath)
 
